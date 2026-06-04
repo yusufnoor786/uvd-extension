@@ -112,16 +112,18 @@ export class DownloadManager {
     signal: AbortSignal,
     update: (p: Partial<DownloadJob>) => void
   ): Promise<void> {
-    // For YouTube, stream URLs need cookies — fetch as blob first
-    if (job.pageUrl?.includes('youtube.com') || job.platform === 'youtube') {
-      return this.blobDownload(job, signal, update);
+    // YouTube URLs require server-side downloading — redirect to backend
+    if (job.platform === 'youtube' || job.pageUrl?.includes('youtube.com')) {
+      throw new Error(
+        'YouTube requires Backend Download. Click the quality button → select "Backend Download".'
+      );
     }
 
     return new Promise((resolve, reject) => {
       // Ensure filename always has correct extension
       const ext = job.stream.format === 'webm' ? 'webm' : 'mp4';
       const safeFilename = (job.filename || job.title)
-        .replace(/\.[^.]+$/, '')   // strip any wrong extension
+        .replace(/\.[^.]+$/, '')
         .replace(/[<>:"/\\|?*]/g, '') + '.' + ext;
 
       const downloadOptions: chrome.downloads.DownloadOptions = {
@@ -168,66 +170,6 @@ export class DownloadManager {
         });
       });
     });
-  }
-
-  // ── Blob download (fetch with cookies, then save) ─────────────────────────
-  // Used for YouTube and other sites where URLs need browser cookies/headers
-
-  private async blobDownload(
-    job: DownloadJob,
-    signal: AbortSignal,
-    update: (p: Partial<DownloadJob>) => void
-  ): Promise<void> {
-    update({ status: 'downloading', progress: 0 });
-
-    try {
-      const response = await fetch(job.stream.url, {
-        credentials: 'include',
-        headers: {
-          'Referer': job.pageUrl || 'https://www.youtube.com/',
-          'Origin': 'https://www.youtube.com',
-        },
-        signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status} — URL may have expired. Re-scan the page and try again.`);
-      }
-
-      const contentLength = parseInt(response.headers.get('content-length') || '0');
-      const reader = response.body!.getReader();
-      const chunks: ArrayBuffer[] = [];
-      let received = 0;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer);
-        received += value.length;
-        if (contentLength > 0) {
-          update({ progress: Math.round((received / contentLength) * 100), downloadedBytes: received });
-        }
-      }
-
-      const blob = new Blob(chunks, { type: 'video/mp4' });
-      const blobUrl = URL.createObjectURL(blob);
-
-      const ext = job.stream.format === 'webm' ? 'webm' : 'mp4';
-      const safeFilename = (job.title || 'video').replace(/[<>:"/\\|?*]/g, '') + '.' + ext;
-
-      await new Promise<void>((resolve, reject) => {
-        chrome.downloads.download({ url: blobUrl, filename: safeFilename, saveAs: false }, (id) => {
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-          if (chrome.runtime.lastError || !id) return reject(new Error(chrome.runtime.lastError?.message));
-          update({ status: 'completed', progress: 100, completedAt: Date.now() });
-          resolve();
-        });
-      });
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') throw err;
-      // Blob download failed — tell user to use backend
-      throw new Error(`Direct download blocked by YouTube. Use "Backend Download" instead (requires backend enabled in settings).`);
-    }
   }
 
   // ── Backend-assisted download ─────────────────────────────────────────────
