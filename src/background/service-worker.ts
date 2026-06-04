@@ -10,7 +10,7 @@ import type {
   AudioStream,
 } from '../types';
 import { createLogger } from '../utils/logger';
-import { getSettings, saveDownload, getDownloads, deleteDownload } from '../utils/storage';
+import { getSettings, saveSettings, saveDownload, getDownloads, deleteDownload } from '../utils/storage';
 import { generateId, sanitizeFilename, buildFilename } from '../utils/helpers';
 import { BackendService } from './backend-service';
 import { DownloadManager } from './download-manager';
@@ -324,10 +324,6 @@ async function broadcastToPopup(message: ExtensionMessage): Promise<void> {
     // In MV3 service workers, broadcast via runtime.sendMessage to all extension pages
     chrome.runtime.sendMessage(message).catch(() => { /* popup may not be open */ });
   } catch { /* ignore */ }
-}
-
-async function saveSettings(settings: AppSettings): Promise<void> {
-  await chrome.storage.sync.set({ uvd_settings: settings });
 }
 
 log.info('Background service worker started');
