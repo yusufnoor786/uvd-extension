@@ -12,7 +12,7 @@ import { createLogger } from '../utils/logger';
 const log = createLogger('BackendService');
 
 export class BackendService {
-  private baseUrl: string = 'http://localhost:3001';
+  private baseUrl: string = 'https://zabukazuzu-uvd-backend.hf.space';
   private apiKey: string = '';
   private requestTimeout: number = 30_000;
 
