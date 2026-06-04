@@ -95,8 +95,9 @@ export class DownloadManager {
       if ((err as Error).name === 'AbortError') {
         update({ status: 'paused' });
       } else {
-        log.error('Download failed', { jobId: job.id, error: String(err) });
-        update({ status: 'failed', error: String(err) });
+        const errMsg = (err instanceof Error) ? err.message : String(err);
+        log.error('Download failed', { jobId: job.id, error: errMsg, stack: (err as Error)?.stack?.slice(0, 200) });
+        update({ status: 'failed', error: errMsg });
       }
     } finally {
       this.active.delete(job.id);
