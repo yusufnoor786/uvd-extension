@@ -195,13 +195,13 @@ export class DownloadManager {
 
       const contentLength = parseInt(response.headers.get('content-length') || '0');
       const reader = response.body!.getReader();
-      const chunks: Uint8Array[] = [];
+      const chunks: ArrayBuffer[] = [];
       let received = 0;
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        chunks.push(value);
+        chunks.push(value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer);
         received += value.length;
         if (contentLength > 0) {
           update({ progress: Math.round((received / contentLength) * 100), downloadedBytes: received });
