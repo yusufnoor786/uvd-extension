@@ -321,10 +321,8 @@ setInterval(checkBackendStatus, 30_000);
 
 async function broadcastToPopup(message: ExtensionMessage): Promise<void> {
   try {
-    const views = chrome.extension.getViews({ type: 'popup' });
-    views.forEach(v => {
-      try { v.postMessage(message, '*'); } catch { /* ignore */ }
-    });
+    // In MV3 service workers, broadcast via runtime.sendMessage to all extension pages
+    chrome.runtime.sendMessage(message).catch(() => { /* popup may not be open */ });
   } catch { /* ignore */ }
 }
 

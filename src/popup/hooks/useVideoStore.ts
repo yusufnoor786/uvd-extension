@@ -23,28 +23,42 @@ export const useVideoStore = create<VideoStore>((set, get) => ({
   loadVideos: async () => {
     set({ loading: true, error: null });
     try {
-      const [tabsResult] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tabsResult?.id) return;
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const tabsResult = tabs[0];
+      if (!tabsResult?.id) {
+        set({ loading: false, videos: [], activeVideo: null });
+        return;
+      }
+
+      // Trigger a scan on the active tab first
+      try {
+        await chrome.tabs.sendMessage(tabsResult.id, {
+          type: 'RESCAN_PAGE', payload: {}, timestamp: Date.now(),
+        });
+        // Give content script time to detect
+        await new Promise(r => setTimeout(r, 1500));
+      } catch {
+        // Content script not ready yet (page not refreshed) — that's ok
+      }
 
       const response = await chrome.runtime.sendMessage({
         type: 'GET_VIDEOS',
         tabId: tabsResult.id,
         timestamp: Date.now(),
-      });
+      }).catch(() => null);
 
-      if (response?.success) {
-        const videos: DetectedVideo[] = response.videos || [];
-        const activeResponse = await chrome.runtime.sendMessage({
-          type: 'GET_ACTIVE_VIDEO',
-          tabId: tabsResult.id,
-          timestamp: Date.now(),
-        });
-        set({
-          videos,
-          activeVideo: activeResponse?.video || (videos.length > 0 ? videos[0] : null),
-          loading: false,
-        });
-      }
+      const videos: DetectedVideo[] = response?.videos || [];
+      const activeResponse = await chrome.runtime.sendMessage({
+        type: 'GET_ACTIVE_VIDEO',
+        tabId: tabsResult.id,
+        timestamp: Date.now(),
+      }).catch(() => null);
+
+      set({
+        videos,
+        activeVideo: activeResponse?.video || (videos.length > 0 ? videos[0] : null),
+        loading: false,
+      });
     } catch (err) {
       log.error('Failed to load videos', { error: String(err) });
       set({ loading: false, error: String(err) });

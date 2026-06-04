@@ -38,11 +38,9 @@
     "storage",
     "downloads",
     "webRequest",
-    "declarativeNetRequest",
     "scripting",
     "notifications",
-    "offscreen",
-    "sidePanel"
+    "contextMenus"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -57,9 +55,6 @@
     }
   ],
   "options_page": "options/index.html",
-  "side_panel": {
-    "default_path": "popup/index.html"
-  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
