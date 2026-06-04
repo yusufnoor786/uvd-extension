@@ -1,0 +1,67 @@
+{
+  "manifest_version": 3,
+  "name": "Ultimate Video Downloader",
+  "version": "1.0.0",
+  "description": "Professional video downloader for YouTube, Facebook, Instagram, Twitter, TikTok, Vimeo and 50+ sites",
+  "author": "Ultimate Video Downloader",
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "32": "assets/icons/icon32.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    },
+    "default_title": "Ultimate Video Downloader"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content-main.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "downloads",
+    "webRequest",
+    "declarativeNetRequest",
+    "scripting",
+    "notifications",
+    "offscreen",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/*",
+        "content/injected.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "options_page": "options/index.html",
+  "side_panel": {
+    "default_path": "popup/index.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "minimum_chrome_version": "116"
+}
