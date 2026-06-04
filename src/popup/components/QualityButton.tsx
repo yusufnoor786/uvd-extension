@@ -88,15 +88,18 @@ export function QualityButton({ stream, onDownload }: Props) {
 
         <MenuItem dense onClick={() => { setAnchor(null); onDownload('browser'); }}>
           <ListItemIcon><DownloadIcon fontSize="small" /></ListItemIcon>
-          <ListItemText primary="Browser Download" secondary="Uses chrome.downloads API" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
+          <ListItemText primary="Browser Download" secondary="Built-in downloader" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
         </MenuItem>
 
-        {stream.requiresMerge && (
-          <MenuItem dense onClick={() => { setAnchor(null); onDownload('backend'); }}>
-            <ListItemIcon><StorageIcon fontSize="small" /></ListItemIcon>
-            <ListItemText primary="Backend Download" secondary="FFmpeg merge + processing" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
-          </MenuItem>
-        )}
+        <MenuItem dense onClick={() => { setAnchor(null); onDownload('backend'); }}>
+          <ListItemIcon><StorageIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary="Backend Download" secondary="Via HF backend + FFmpeg" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
+        </MenuItem>
+
+        <MenuItem dense onClick={() => { setAnchor(null); onDownload('fdm'); }}>
+          <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary="FDM" secondary="Free Download Manager" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
+        </MenuItem>
 
         <MenuItem dense onClick={() => { setAnchor(null); onDownload('idm'); }}>
           <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
