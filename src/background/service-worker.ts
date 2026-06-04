@@ -70,6 +70,8 @@ async function handleMessage(
       state.activeVideoByTab.set(tabId!, video.id);
       log.info('Video detected', { id: video.id, platform: video.platform, url: video.url });
       broadcastToPopup({ type: 'VIDEO_DETECTED', payload: video, timestamp: Date.now() });
+      // Auto-analyze via backend to get all qualities (async, don't await)
+      autoAnalyze(video);
       return { success: true };
     }
 
@@ -81,6 +83,8 @@ async function handleMessage(
       state.activeVideoByTab.set(tabId!, video.id);
       log.info('Video changed', { from: previousId, to: video.id, platform: video.platform });
       broadcastToPopup({ type: 'VIDEO_CHANGED', payload: { previousId, video }, timestamp: Date.now() });
+      // Auto-analyze new video
+      autoAnalyze(video);
       return { success: true };
     }
 
@@ -318,6 +322,27 @@ async function checkBackendStatus(): Promise<void> {
 setInterval(checkBackendStatus, 30_000);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Auto-analyze via backend to enrich streams (all qualities)
+async function autoAnalyze(video: DetectedVideo): Promise<void> {
+  try {
+    const settings = await getSettings();
+    if (!settings.advanced.backendEnabled) return;
+    const result = await backend.analyzeVideo({
+      url: video.url,
+      platform: video.platform,
+      pageUrl: video.pageUrl,
+    });
+    if (result.success && result.metadata) {
+      const existing = state.videos.get(video.id);
+      if (!existing) return;
+      existing.metadata = result.metadata;
+      state.videos.set(video.id, existing);
+      broadcastToPopup({ type: 'METADATA_UPDATE', payload: existing, timestamp: Date.now() });
+      log.info('Auto-analysis complete', { id: video.id, qualities: result.metadata.videoStreams.length });
+    }
+  } catch { /* silently ignore — popup already has basic streams */ }
+}
 
 async function broadcastToPopup(message: ExtensionMessage): Promise<void> {
   try {

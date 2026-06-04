@@ -177,6 +177,7 @@ export function VideoCard({ video, isActive }: Props) {
               <QualityButton
                 key={idx}
                 stream={stream}
+                platform={video.platform}
                 onDownload={(method) => handleDownload(stream, method)}
               />
             ))}

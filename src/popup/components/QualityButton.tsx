@@ -14,6 +14,7 @@ import { formatBytes } from '../../utils/helpers';
 interface Props {
   stream: VideoStream;
   onDownload: (method: DownloadMethod) => void;
+  platform?: string;
 }
 
 const QUALITY_COLORS: Record<string, string> = {
@@ -29,8 +30,9 @@ const QUALITY_COLORS: Record<string, string> = {
   'audio': '#FF5722',
 };
 
-export function QualityButton({ stream, onDownload }: Props) {
+export function QualityButton({ stream, onDownload, platform }: Props) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const isYouTube = platform === 'youtube';
   const open = Boolean(anchor);
 
   const color = QUALITY_COLORS[stream.quality] || '#6750A4';
@@ -96,25 +98,33 @@ export function QualityButton({ stream, onDownload }: Props) {
           <ListItemText primary="Backend Download" secondary="Via HF backend + FFmpeg" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
         </MenuItem>
 
-        <MenuItem dense onClick={() => { setAnchor(null); onDownload('fdm'); }}>
-          <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
-          <ListItemText primary="FDM" secondary="Free Download Manager" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
-        </MenuItem>
+        {!isYouTube && (
+          <MenuItem dense onClick={() => { setAnchor(null); onDownload('fdm'); }}>
+            <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
+            <ListItemText primary="FDM" secondary="Free Download Manager" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
+          </MenuItem>
+        )}
 
-        <MenuItem dense onClick={() => { setAnchor(null); onDownload('idm'); }}>
-          <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
-          <ListItemText primary="IDM" secondary="Internet Download Manager" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
-        </MenuItem>
+        {!isYouTube && (
+          <MenuItem dense onClick={() => { setAnchor(null); onDownload('idm'); }}>
+            <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
+            <ListItemText primary="IDM" secondary="Internet Download Manager" primaryTypographyProps={{ fontSize: 12 }} secondaryTypographyProps={{ fontSize: 11 }} />
+          </MenuItem>
+        )}
 
-        <MenuItem dense onClick={() => { setAnchor(null); onDownload('jdownloader'); }}>
-          <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
-          <ListItemText primary="JDownloader 2" primaryTypographyProps={{ fontSize: 12 }} />
-        </MenuItem>
+        {!isYouTube && (
+          <MenuItem dense onClick={() => { setAnchor(null); onDownload('jdownloader'); }}>
+            <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
+            <ListItemText primary="JDownloader 2" primaryTypographyProps={{ fontSize: 12 }} />
+          </MenuItem>
+        )}
 
-        <MenuItem dense onClick={() => { setAnchor(null); onDownload('aria2'); }}>
-          <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
-          <ListItemText primary="aria2 / Motrix" primaryTypographyProps={{ fontSize: 12 }} />
-        </MenuItem>
+        {!isYouTube && (
+          <MenuItem dense onClick={() => { setAnchor(null); onDownload('aria2'); }}>
+            <ListItemIcon><OpenInNewIcon fontSize="small" /></ListItemIcon>
+            <ListItemText primary="aria2 / Motrix" primaryTypographyProps={{ fontSize: 12 }} />
+          </MenuItem>
+        )}
 
         <MenuItem dense onClick={() => { setAnchor(null); navigator.clipboard.writeText(stream.url); }}>
           <ListItemIcon><LinkIcon fontSize="small" /></ListItemIcon>
