@@ -140,9 +140,10 @@ export class DownloadManager {
             reject(new Error(`Download interrupted: ${delta.error?.current}`));
           }
 
-          if (delta.bytesReceived !== undefined && delta.totalBytes?.current) {
-            const progress = Math.round((delta.bytesReceived.current! / delta.totalBytes.current) * 100);
-            update({ progress, downloadedBytes: delta.bytesReceived.current });
+          if ((delta as any).bytesReceived !== undefined && delta.totalBytes?.current) {
+            const received = (delta as any).bytesReceived?.current ?? 0;
+            const progress = Math.round((received / delta.totalBytes.current) * 100);
+            update({ progress, downloadedBytes: received });
           }
         };
 
